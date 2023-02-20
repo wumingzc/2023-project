@@ -316,9 +316,3 @@ def watermark(dir_img):
 
 def font_processing(dir_img):
     print("processing font...")
-
-
-
-
-
-main()
