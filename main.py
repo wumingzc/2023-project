@@ -70,7 +70,7 @@ def main():
 
 
 # 创建文件并写入内容
-def create_file(file_path, file_name, msg):
+def write_file(file_path, file_name, msg):
 
     # 如果目标文件夹不存在，创建新的文件夹
     if not os.path.isdir(file_path):
@@ -181,17 +181,17 @@ def read(dir_img):
     result_path = "./result"
     result_name = "result.txt"
     print("Reading...")
-    create_file(result_path,result_name, str(currentDataAndTime))
+    write_file(result_path,result_name, str(currentDataAndTime))
     file_name = os.listdir(dir_img)
 
     # 获取文件夹的大小：
     dir_size = os.path.getsize(dir_img)
-    create_file(result_path,result_name,"File size: "+str(dir_size)+" byte")
+    write_file(result_path,result_name,"File size: "+str(dir_size)+" byte")
     # print("File size:", dir_size," byte")
 
     # 统计文件夹中的文件个数：
     num_png = len(file_name)
-    create_file(result_path,result_name, "Number of pictures: "+ str(num_png))
+    write_file(result_path,result_name, "Number of pictures: "+ str(num_png))
     # print("Number of pictures:", num_png)
 
     # 遍历文件夹,输出图像的属性
@@ -199,7 +199,7 @@ def read(dir_img):
     # s = "{:^45}\t{:^10}\t{:^15}\t{:^20}\t{:^35}"
     s = "{:<45}\t{:<10}\t{:<15}\t{:<20}\t{:<35}"
     # s = "{:>45}\t{:>10}\t{:>15}\t{:>20}\t{:>35}"
-    create_file(result_path,result_name, s.format("Name", "Format", "Size", "Shape", "Date"))
+    write_file(result_path,result_name, s.format("Name", "Format", "Size", "Shape", "Date"))
     # print(s.format("Name", "Format", "Size", "Shape", "Date"))
     
     img_list = getFileList(dir_img, [])
@@ -211,7 +211,7 @@ def read(dir_img):
         img_cv = cv_imread(img_path) # 这里如果使用系统自带的cv2.imread, img_path需要是英文，因为可能会包含中文，我们使用自定义函数cv_imread
         img_shape = img_cv.shape
         img_format = os.path.splitext(img_path)[-1][1:]
-        create_file(result_path,result_name, s.format(str(img_name),str(img_format),img_size,str(img_shape),img_date))
+        write_file(result_path,result_name, s.format(str(img_name),str(img_format),img_size,str(img_shape),img_date))
         # print(s.format(img_name,'JPG',img_size,str(img_shape),img_date))
 
     print("End reading.\n")
