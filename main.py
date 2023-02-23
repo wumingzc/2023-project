@@ -5,6 +5,8 @@ from PIL import Image
 import time
 import numpy as np
 
+import re # 正则表达式
+
 #得到照片的拍摄时间
 import exifread 
 
@@ -90,8 +92,11 @@ def cv_imread(file_path):
 
 # 获取拍摄时间
 def get_time(file_name):
-    img = exifread.process_file(open(file_name,'rb'))
-    time = img['Image DateTime']
+    try:
+        img = exifread.process_file(open(file_name,'rb'))
+        time = img['EXIF DateTimeDigitized']
+    except:
+        time = None
     return time
 
 # 获取文件夹及其子文件夹中文件路径列表
@@ -206,12 +211,12 @@ def read(dir_img):
     for img_path in img_list:
         img_name = os.path.splitext(os.path.basename(img_path))[0]
         img_size = os.path.getsize(img_path)
-        img_date = time.ctime(os.path.getmtime(img_path))# 这里获取的是创建时间。
-        # img_time = get_time(img_path)
+        # img_date = time.ctime(os.path.getmtime(img_path))# 这里获取的是创建时间。
+        img_time = get_time(img_path) # 获得拍摄时间
         img_cv = cv_imread(img_path) # 这里如果使用系统自带的cv2.imread, img_path需要是英文，因为可能会包含中文，我们使用自定义函数cv_imread
         img_shape = img_cv.shape
         img_format = os.path.splitext(img_path)[-1][1:]
-        write_file(result_path,result_name, s.format(str(img_name),str(img_format),img_size,str(img_shape),img_date))
+        write_file(result_path,result_name, s.format(str(img_name),str(img_format),img_size,str(img_shape), str(img_time)))
         # print(s.format(img_name,'JPG',img_size,str(img_shape),img_date))
 
     print("End reading.\n")
@@ -267,7 +272,7 @@ def find_repeat(dir_img):
     # 将重复的图片移动到新的文件夹，实现对原文件夹降重
     for image in file_repeat:
         shutil.move(image, save_path)
-        print("Removing repeat pictures:", image)
+        print("Removing repeat pictures:%s from %s to %s." %(image,dir_img,save_path))
     print("Finish remocing repeat pictures")
 
 
@@ -281,15 +286,39 @@ def find_repeat(dir_img):
 '''
 def renumber(dir_img):
     print("Renumbering...")
-    choice = input("Please choose the way you want to renumber:\n1. Name with numbers 1, 2, 3,...\n2.Name with shot date like 2022-02-19 means shot on Feb 19,2022")
-    if choice == '1':
-        path_name = dir_img
-        i = 1
-        for item in os.listdir(path_name):
-            os.rename(os.path.join(path_name,item),os.path.join(path_name,(str(i)+'.jpg')))
-            i += 1
-    else :
-        path_name = dir_img
+    path_name = dir_img #文件路径
+    
+    
+    path_list = os.listdir(path_name)
+    new_path_list = sorted(path_list,key = lambda i:int(re.findall(r'\d+',i)[0])) #对path_list进行排序,这里使用了正则表达式
+    # print(new_path_list)
+
+    choice = input("1. Name with numbers 1, 2, 3,...\n2.Input your prefix text.\nPlease choose the way you want to renumber: 1 OR 2?\n")
+    if choice == '2':
+        perfix = input("Please input your perfix: ")
+
+    i = 1 # 表示文件的命名是从1开始的
+    for item in new_path_list: # 遍历文件夹下的所有子文件，这里默认没有子文件夹
+        if item.endswith('.jpg') or item.endswith('.png'): # 输入图片的格式为jpg或者png，我们在重命名时可以统一转为jpg格式
+            src = os.path.join(path_name,item) #源文件路径及文件名
+
+            if choice == '1': #只有数字
+                new_name = str(i)+'.jpg'
+            else: # 用户自定义前缀
+                new_name = perfix + '-' +str(i) + '.jpg'
+            dst = os.path.join(path_name,new_name)
+            # 如果已经有文件名为i.jpg,那么就跳过继续
+
+            # rename()找不到目标文件或目录，会抛出FileNotFoundError异常
+            try:
+                print('Rename from %s to %s.'%(src,dst))
+                os.rename(src,dst)
+                i += 1
+            except:
+                print('Name %s exist.'%(dst))
+                continue
+    print("Total renamed %s files"%(i-1))
+    
 
 
     print("Finish renumbering.")
@@ -316,3 +345,5 @@ def watermark(dir_img):
 
 def font_processing(dir_img):
     print("processing font...")
+
+main()
