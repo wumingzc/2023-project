@@ -26,13 +26,17 @@ currentDataAndTime = datetime.now()
 # 输出：成功/失败
 def main():
     # 照片文件路径
-    dir_img = "./imgs/"
+    
+    
 
     functions=['1.read','2.find repeat','3.renumber','4.add logo','5.resize','6.watermark','7.font processing']
     
     # 进入执行指令循环
     flag = True
     while(flag):
+        # dir_img = "./imgs/"
+        dir_img = input('Please input the file directory: ') # 让用户输入要操作的文件目录
+        
         # 打印功能列表
         print(*functions,sep="\n")
 
@@ -282,7 +286,7 @@ def find_repeat(dir_img):
 '''
 功能3：照片文件重新编号
 输入：照片文件路径
-结果：照片文件重新编号，以原照片顺序重命名为1.jpg，2.jpg，3.jpg...
+结果：照片文件重新编号，以原照片顺序重命名为1.jpg，2.jpg，3.jpg...或者让用户添加前缀，重命名为“前缀+数字.jpg”
 '''
 def renumber(dir_img):
     print("Renumbering...")
@@ -328,11 +332,69 @@ def renumber(dir_img):
 
 '''
 功能3：添加专属标志
-1. 文字 2.图片
+输入：logo图片的路径，及位置（左上、坐下、右上、右下）
+结果：目标路径下所有图片在对应位置加水印图片
+
+现在的问题是：1.添加logo的位置不准确 2.添加logo时照片会翻转方向 3.当logo比原照片大时，没有抛出异常提醒
 '''
 
 def add_logo(dir_img):
     print("Adding logo...")
+    all_path = [] #用来存储需要加logo的图片路径
+    
+
+    #创建目录保存处理后的图片
+    try:
+        os.mkdir('file_logo')
+    except FileExistsError:
+        print('dir "file_logo" Exists ')
+
+    
+    # root指当前正在遍历的文件夹的地址
+    # dirs是一个list指该文件夹中所有的目录的名字（不包含子目录）
+    # files是list, 内容是该文件夹中所有的文件
+
+    #获取当前目录下所有的jpg格式文件路径
+    for root, dirs, files in os.walk(dir_img):
+        for file in files:
+            if "jpg" in file:
+                all_path.append(os.path.join(root, file))
+
+
+    #打开logo图片文件
+    LOGO_FILE = input('Please input the file name of logo: ')
+
+    # 选择位置
+    decide_position = input('Where do you want to put your logo?\n top-left, top-right, down-left, down-right: ')
+    
+
+    dir_logo = './logo'
+    # dir_logo = input('Please input the directory of logo file: ')
+    logoIm = Image.open(os.path.join(dir_logo,LOGO_FILE)).convert("RGBA") #打开logo
+    logoWith, logoHeight = logoIm.size
+
+    #r,g,b,a =logoIm.split()
+
+
+    file_dir = './file_logo' # 将贴上logo的图片保存在file_logo里
+    for i in range(1,len(all_path)+1): # 给贴上logo的图片重命名，从1开始
+        imTmp = Image.open(all_path[i-1]).convert("RGB") #打开背景图
+        imWidth,imHeight = imTmp.size
+        if(decide_position == 'down-right'): #给图片的右下角添加logo
+            position = (imWidth-logoWith,imHeight-logoHeight)
+        elif(decide_position == 'down-left'): # 左下角
+            position = (logoWith, imHeight -logoHeight)
+        elif(decide_position == 'top-left'): # 左上角
+            position = (logoWith, logoHeight)
+        else: # 右上角
+            position = (imWidth-logoWith, logoHeight)
+    
+        imTmp.paste(logoIm, position, logoIm)
+
+        filename =str(i) + '.png'
+        imTmp.save(os.path.join(file_dir,filename))
+        print('Saved file %s.'%(filename))
+
 
 
 def resize(dir_img):
