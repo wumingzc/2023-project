@@ -29,7 +29,7 @@ def main():
     
     
 
-    functions=['1.read','2.find repeat','3.renumber','4.add logo','5.resize','6.watermark','7.font processing']
+    functions=['1.read','2.find repeat','3.renumber','4.add logo','5.watermark','6.resize','7.font processing']
     
     # 进入执行指令循环
     flag = True
@@ -53,9 +53,9 @@ def main():
         elif op == "4":
             add_logo(dir_img)
         elif op == "5":
-            resize(dir_img)
-        elif op == "6":
             watermark(dir_img)
+        elif op == "6":
+            resize(dir_img)
         elif op == "7":
             font_processing(dir_img)
         # 输入格式不对
@@ -305,11 +305,11 @@ def renumber(dir_img):
     for item in new_path_list: # 遍历文件夹下的所有子文件，这里默认没有子文件夹
         if item.endswith('.jpg') or item.endswith('.png'): # 输入图片的格式为jpg或者png，我们在重命名时可以统一转为jpg格式
             src = os.path.join(path_name,item) #源文件路径及文件名
-
+            format =img_format = os.path.splitext(src)[-1][1:] # 源文件的格式
             if choice == '1': #只有数字
-                new_name = str(i)+'.jpg'
+                new_name = str(i)+'.'+format
             else: # 用户自定义前缀
-                new_name = perfix + '-' +str(i) + '.jpg'
+                new_name = perfix + '-' +str(i) + '.'+format
             dst = os.path.join(path_name,new_name)
             # 如果已经有文件名为i.jpg,那么就跳过继续
 
@@ -331,7 +331,7 @@ def renumber(dir_img):
  #######################################################
 
 '''
-功能3：添加专属标志
+功能4：批量为图片添加专属标志
 输入：logo图片的路径，及位置（左上、坐下、右上、右下）
 结果：目标路径下所有图片在对应位置加水印图片
 
@@ -395,14 +395,16 @@ def add_logo(dir_img):
         imTmp.save(os.path.join(file_dir,filename))
         print('Saved file %s.'%(filename))
 
-
+'''
+功能5：批量为图片添加水印
+输入：
+结果：
+'''
+def watermark(dir_img):
+    print("watermarking...")
 
 def resize(dir_img):
     print("Resizing...")
-
-
-def watermark(dir_img):
-    print("watermarking...")
 
 
 def font_processing(dir_img):
